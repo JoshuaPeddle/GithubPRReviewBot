@@ -13,12 +13,16 @@ using OpenAI_API.Chat;
 public class WebhookController : ControllerBase
 {
     private GitHubClient _githubClient;
-    private const string privateKey = "C:\\Users\\josh\\Downloads\\pr-review-llm.2024-11-01.private-key.pem";
+    private readonly IConfiguration _configuration;
+    private readonly string _privateKeyPath;
+
     private const int appId = 974247;
 
-    public WebhookController()
+    public WebhookController(IConfiguration configuration)
     {
-        var jwtToken = GitHubAppAuth.GenerateJwt(privateKey, appId);
+        _configuration = configuration;
+
+        var jwtToken = GitHubAppAuth.GenerateJwt(_configuration["GitHub:PrivateKeyPath"], appId);
 
         var appClient = new GitHubClient(new Octokit.ProductHeaderValue("PRReviewBot"))
         {
@@ -77,14 +81,20 @@ public class WebhookController : ControllerBase
         return BadRequest();
     }
 
-    private static async Task<ChatResult> LlmReviewDiff(string diff)
+    private async Task<ChatResult> LlmReviewDiff(string diff)
     {
-        var openAI = new OpenAIAPI("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");
+        var apiKey = _configuration["OpenAi:ApiKey"];
+        var model = _configuration["OpenAi:Model"];
 
-        var chatRequest = new OpenAI_API.Chat.ChatRequest()
+        var openAI = new OpenAIAPI(apiKey);
+
+        var chatRequest = new ChatRequest()
         {
-            Messages = new List<ChatMessage> { new ChatMessage(ChatMessageRole.User, $"Please review the following code diff: {diff}") },
-            Model = "gpt-4o-mini",
+            Messages =
+            [
+                new ChatMessage(ChatMessageRole.User, $"Please review the following code diff: {diff}") 
+            ],
+            Model = model,
         };
 
         var result = await openAI.Chat.CreateChatCompletionAsync(chatRequest);
