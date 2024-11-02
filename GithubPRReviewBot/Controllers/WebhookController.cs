@@ -51,7 +51,6 @@ public class WebhookController : ControllerBase
         var node = JsonNode.Parse(payload.GetRawText());
         var webhookPayload = node["payload"].Deserialize<GitHubWebhookPayload>(options);
 
-
         if (webhookPayload == null)
         {
             return BadRequest(new { error = "Invalid payload." });
@@ -65,10 +64,6 @@ public class WebhookController : ControllerBase
 
         if (action == "created" && commentBody.Contains("@pr_review_bot"))
         {
-            var pullRequest = await _githubClient.PullRequest.Get(repositoryOwner, repositoryName, issueNumber);
-
-            var diffUrl = pullRequest.DiffUrl;
-
             var diff = await GetPullRequestDiffUsingApi(repositoryOwner, repositoryName, issueNumber);
 
             ChatResult result = await LlmReviewDiff(diff);
