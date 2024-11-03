@@ -21,7 +21,8 @@ namespace GithubPRReviewBot.Services
             var chatRequest = new ChatRequest()
             {
                 Messages =
-                [   new ChatMessage(ChatMessageRole.System, $"You are an AI-powered code reviewer."),
+                [   
+                    new ChatMessage(ChatMessageRole.System, $"You are an AI-powered code reviewer."),
                     new ChatMessage(ChatMessageRole.User, $"Please review the following code diff: {diff}")
                 ],
                 Model = model,
