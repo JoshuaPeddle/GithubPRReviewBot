@@ -14,6 +14,13 @@ namespace GithubPRReviewBot.Services
         public GitHubWebhookService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _appId = int.Parse(configuration["GitHub:AppId"]);
+
+            var privateKeyPath = configuration["GitHub:PrivateKeyPath"];
+            if (string.IsNullOrEmpty(privateKeyPath))
+                throw new ArgumentException("GitHub:PrivateKeyPath is required.");
+            if (!File.Exists(privateKeyPath))
+                throw new ArgumentException("GitHub:PrivateKeyPath does not exist.");
+
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }

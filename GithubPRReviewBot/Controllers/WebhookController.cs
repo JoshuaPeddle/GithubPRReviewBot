@@ -24,14 +24,9 @@ public class WebhookController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Handle([FromBody] JsonElement payload)
     {
-        var node = JsonNode.Parse(payload.GetRawText());
+        var webhookPayload = JsonSerializer.Deserialize<GitHubWebhookPayload>(payload.GetRawText(), serializerOptions);
 
-        if (node == null)
-            return BadRequest(new { error = "Invalid webhook payload." });
-
-        var webhookPayload = node["payload"].Deserialize<GitHubWebhookPayload>(serializerOptions);
-
-        if (webhookPayload == null)
+        if (webhookPayload == null) 
             return BadRequest(new { error = "Invalid webhook payload." });
 
         var action = webhookPayload.Action;
